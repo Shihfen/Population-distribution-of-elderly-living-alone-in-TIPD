@@ -1,0 +1,124 @@
+/* Author: Shihfen Peng, NCCU Sociology. Advisor: Professor JP Lin, Academia Sinica.*/
+/* Programming purpose: According to TIPD(Taiwan Indigenous Peoples Data) data, the population distribution of elderly living 
+   alone in Taiwan's Indigenous group is proposed as the basis for further research in the future.
+   Source: From 2013 to 2019, the last TIPD Household Structure Data of each year, in total of seven years.*/
+
+
+libname FromDir '.'; 
+libname ToDir   '.'; 
+
+data FromDir.TIPs201412_StdHousehold_Overall ; 
+  set ToDir.TIPs201412_StdHousehold_Overall;
+  If Household_Size = 1 and Household_AvgAge>=55;
+run;
+
+/****************************************************/
+/* The map of Gender and Age group of alone-living elder TIPs: */
+
+
+Proc format;
+Value AgeF
+  55-64=55 to 64
+  65-74=65 to 74
+  75-84=75 to 84
+  85-high=85 and above
+;
+
+Value GenderF
+  1=Male
+  2=Female
+  0=No data
+;
+
+Run;
+
+proc tabulate data=FromDir.TIPs201412_StdHousehold_Overall; 
+    class Household_AvgAge 
+          HouseholdHead_Sex;
+Format Household_AvgAge AgeF.
+       HouseholdHead_Sex GenderF.
+;
+Table (Household_AvgAge='Age group' all='Total'),(N)*( HouseholdHead_Sex='Gender' all='Total');
+run;
+
+/****************************************************/
+/* The map of Marital status and Age group of alone-living elder TIPs: */
+
+Proc format;
+Value AgeF
+  55-64=55 to 64
+  65-74=65 to 74
+  75-84=75 to 84
+  85-high=85 and above
+;
+
+Value GenderF
+  1=Male
+  2=Female
+  0=No data
+;
+
+Value MariF
+  1=Single
+  2=Married
+  3=Divorced
+  4=Widowed
+  0=No data
+;
+Run;
+
+Title Marital status of Taiwanese Indigenous Elderly living alone;
+proc tabulate data=FromDir.TIPs201412_StdHousehold_Overall; 
+    class Household_AvgAge 
+             HouseholdHead_MariStus;
+Format Household_AvgAge AgeF.
+             HouseholdHead_MariStus MariF.
+;
+Table (Household_AvgAge='Age group' all='Total'),(N)*( HouseholdHead_MariStus='Marital status' all='Total');
+run;
+
+/****************************************************/
+/* The map of Matrilineal or patrilineal TI group and Age group of alone-living elder TIPs: */
+
+
+Proc format;
+ Value LateralF
+ 01= Matrilineal
+ 02= Patrilineal
+ 03= Bilateral
+ 04= Patrilineal
+ 05= Bilateral
+ 06= Matrilineal
+ 07= Patrilineal
+ 08= Patrilineal
+ 09= Patrilineal
+ 10= Patrilineal
+ 11= Matrilineal
+ 12= Patrilineal
+ 13= Matrilineal
+ 14= Patrilineal
+ 15= Patrilineal
+ 16= Patrilineal
+ 99=N/A
+ ;
+run;
+
+proc format; 
+picture pctfmt (round) other='009.9%'; 
+run;
+
+
+Title TIPs Elderly living alone by Mother of Father Lateral;
+proc tabulate data=FromDir.TIPs201412_StdHousehold_Overall; 
+    class Household_AvgAge 
+          HouseholdHead_MariStus
+          HouseholdHead_Sex
+          HouseholdHead_Ethnicity
+;
+Format Household_AvgAge AgeF.
+       HouseholdHead_MariStus MariF.
+       HouseholdHead_Sex GenderF.
+       HouseholdHead_Ethnicity LateralF.
+;
+Table (Household_AvgAge='Age group' all='Total'),(pctn=''*f=pctfmt.)*( HouseholdHead_Ethnicity='' all='Total')*( HouseholdHead_Sex='') ;
+run;
